@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="google-signin-client_id" content="102498965997-1id4r28grqs9dm5agkovm8umc0k7eekd.apps.googleusercontent.com">
 	<!-- 266921164837-aoqfrqk0tmgoarlk2gdqmgh2u4khp5u0.apps.googleusercontent.com live-->
-	
+	<title>payment...</title>
     <!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 	
@@ -19,7 +19,6 @@
 	<script>
     function onSuccess(googleUser) {
 		console.log(googleUser.getBasicProfile());
-		$("#sender-img").attr("src",googleUser.getBasicProfile().getImageUrl());
 		document.getElementById('google-input').checked = true;
 		$.ajax({
 			type: "POST",
@@ -32,7 +31,6 @@
 			},
 			error: function(err) {
 			console.log(err);}});
-		document.getElementById('paypal-button').removeAttribute("hidden");
     }
     function onFailure(error) {
       console.log(error);
@@ -81,7 +79,7 @@
 	console.log(res)
 	// 3. Show the buyer a confirmation message.
 	document.getElementById('paypal-input').checked = true;
-	document.getElementById('my-finished').removeAttribute("hidden");
+	document.getElementById('btn-finanlise_purchase').removeAttribute('hidden');
 	setTimeout(function(){
 	window.location.href = "{{url_for('payments_complete')}}";
 	}, 15000);
@@ -89,55 +87,160 @@
 	}
 	}, '#paypal-button');
 	</script>
-    <title>payments.html</title>
   </head>
   <body>
 
-	<div class="container-fluid p-0">
+	<div class="container">
 		<div class="d-flex justify-content-center row">
 		<div class="col-md-6">
-		<div class="p-4 bg-white notes">
-		<div class="d-flex flex-row align-items-center notes-title">
-		<h4>Processing Payment Instantly</h4><span class="px-2 review-text ml-2 rounded">secure</span>
+			<div class="p-4 bg-white notes">
+			<div class="d-flex flex-row align-items-center notes-title">
+			<h4 class='text-muted'>Processing Payment</h4><span class="px-2 review-text ml-2 rounded bg-primary">secure</span>
+			</div>
+			</div>
+		
+			<ul class="nav nav-tabs" id="myTab" role="tablist">
+			<li class="nav-item">
+			<a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Buy</a>
+			</li>
+			<li class="nav-item">
+			<a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">Transfer</a>
+			</li>
+			<li class="nav-item">
+			<a class="nav-link" id="withdraw-tab" data-toggle="tab" href="#withdraw" role="tab" aria-controls="withdraw" aria-selected="false">Withdraw</a>
+			</li>
+			</ul>
+			<div class="tab-content" id="myTabContent">
+				<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+				<div id="upper-margin-for-buy-tab-contents"></div>
+				<div class="row">
+				<div class="input-group mb-3">
+				<input disabled="disabled" id="google-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="label-text"><div id="my-signin2"></div></div>
+				</div>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3" id="payments-amount-row">
+				<input checked="checked" disabled="disabled" id="purchase-amount-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="input-group-prepend">
+				<div class="input-group-text rounded-0" style="width:50px;">~&#162;</div>
+				</div>
+				<input type="number" class="form-control rounded-0" id="enter_total_purchase_value_request" value="0.001" min="0.001" step="0.001" style="width:96px" required>
+				<input type="text" class="form-control rounded-0" id="displayTotalPayable" placeholder="$1000000000.001" disabled="disabled" style="width:96px;">
+				</div>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3" id="paypal-row">
+				<input disabled="disabled" id="paypal-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="label-text"><div class="rounded-0" id="paypal-button" style="width:240px"></div></div>
+				</div>
+				</div>
+				<div class="input-group mb-3">
+				<span class="label-text informational">if you don't have a PayPal account, you can create a new one before you pay. If you don't want to create an account, you can pay using a debit or credit card. You are about to transfer your funds to a non-trust account and we cannot guarentee the insurance of your funds on this network. We are making our best attempts to provide the best service we possibly can.</span>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3">
+				<div id="finalise-purchase-btn">
+				<a class="btn btn-primary" id="btn-finanlise_purchase" href="{{url_for('payments_complete')}}" role="button" hidden="hidden">finish</a>
+				</div>
+				</div>
+				</div>
+				<div class="p-2 bg-white">
+				<h6 class="line-text" style='word-wrap: break-word;'><span>almost there</span></h6>
+				</div>
+				<div class="d-flex justify-content-center p-2 bg-white user-images">
+				<i width="40" class="fas fa-ghost circle-icon rounded-circle"></i>
+				<i width="40" class="fas fa-random circle-icon rounded-circle"></i>
+				<i width="40" class="fas fa-file-invoice circle-icon rounded-circle recipient"></i>
+				</div>
+				</div>
+			
+				<div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
+				<div id="upper-margin-for-buy-tab-contents"></div>
+				<div class="row">
+				<div class="input-group mb-3">
+				<input checked="checked" disabled="disabled" id="transfer-amount-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="input-group-prepend">
+				<div class="input-group-text rounded-0" style="width:50px;">~&#162;</div>
+				</div>
+				<input type="number" class="form-control rounded-0" id="enter_total_transfer_value_request" value="0.001" min="0.001" step="0.001" style="width:96px" required>
+				<input type="text" class="form-control rounded-0" id="displayTotalTransferrable" placeholder="~$1000000000.001" disabled="disabled" style="width:96px;">
+				</div>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3">
+				<input disabled="disabled" id="transfer-address-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="input-group-prepend">
+				<div class="input-group-text rounded-0" style="width:50px; height: 38px;"><i class="fas fa-ghost" style="height: 36px; width: 36px;"></i></div>
+				</div>
+				<input type="text" class="form-control rounded-0" id="enterRecipient" placeholder="enter recipient's address" style="width:192px">
+				</div>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3" hidden="hidden">
+				<div id="finalise-transfer-btn">
+				<a class="btn btn-primary" href="{{url_for('transfers_complete')}}" role="button">transfer</a>
+				</div>
+				</div>
+				</div>
+				</div>
+			
+				<div class="tab-pane fade" id="withdraw" role="tabpanel" aria-labelledby="withdraw-tab-tab">
+				<div id="upper-margin-for-buy-tab-contents"></div>
+				<div class="row">
+				<div class="input-group mb-3">
+				<input checked="checked" disabled="disabled" id="withdrawal-amount-input" type="checkbox" class="option-input radio bg-primary">
+				<div class="input-group-append">
+				<div class="input-group-prepend">
+				<div class="input-group-text rounded-0" style="width:50px;">~&#162;</div>
+				</div>
+				<input type="number" class="form-control rounded-0" id="enter_total_withdrawal_value_request" value="0.001" min="0.001" step="0.001" style="width:96px" required>
+				<input type="text" class="form-control rounded-0" id="displayTotalWithdrawable" placeholder="~$1000000000.001" disabled="disabled" style="width:96px;">
+				</div>
+				</div>
+				</div>
+				<div class="row">
+				<div class="input-group mb-3" hidden="hidden">
+				<div id="finalise-withdraw-btn">
+				<a class="btn btn-primary" href="{{url_for('withdrawals_complete')}}" role="button">withdraw</a>
+				</div>
+				</div>
+				</div>
+				</div>
+			</div>
+		</div>
 		</div>
 		
-		</div>
-		<div class="row">
-		<div class="input-group mb-3">
-			<input disabled="disabled" id="google-input" type="checkbox" class="option-input radio">
-			<div class="input-group-append">
-			<div class="label-text"><div id="my-signin2"></div></div>
-			</div>
-		</div>
-		</div>
-		<div class="row">
-		<div class="input-group mb-3 paypal-row">
-			<input disabled="disabled" id="paypal-input" type="checkbox" class="option-input radio">
-			<div class="input-group-append">
-			<div class="label-text"><div hidden="hidden" id="paypal-button" style="width:240px"></div></div>
-			</div>
-		</div>
-		<div class="input-group mb-3">
-		<span class="label-text informational">if you don't have a PayPal account, you can create a new one before you pay. If you don't want to create an account, you can pay using a debit or credit card.</span>
-		</div>
-		</div>
-		<div class="row">
-		<div class="input-group mb-3" hidden="hidden">
-			<div id="my-finished">
-			<a class="btn btn-primary" href="{{url_for('payments_complete')}}" role="button">finish</a>
-			</div>
-		</div>
-		</div>
-		<div class="p-2 bg-white">
-		<h6 class="line-text"><span>Arpeggio</span></h6>
-		</div>
-		<div class="d-flex justify-content-center p-2 bg-white user-images">
-		<img class="rounded-circle" id="sender-img" src="" width="40">
-		<i width="40" class="fas fa-random circle-icon rounded-circle"></i>
-		<i width="40" class="fas fa-file-invoice circle-icon rounded-circle recipient"></i>
-		</div>
-		</div>
-		</div>
+	<a href='{{url_for("home")}}'><i class="fas fa-hand-point-left fa-2x"></i></a>
+	
+	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	<div class="modal-content">
+	<div class="modal-header">
+	<h5 class="modal-title" id="exampleModalLabel">Maintenance break</h5>
+	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	<span aria-hidden="true">&times;</span>
+	</button>
+	</div>
+	<div class="modal-body">
+	This service will resume in just a few moments!
+	</div>
+	<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	</div>
+	</div>
+	</div>
+	</div>
 	</div>
 	
 	<!-- ajax call cannot with minified/slim jquery -->
@@ -157,5 +260,86 @@
 	
 	<!-- Google OpenID js -->
 	<script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
+	
+	<script>
+	$(document).ready(function() {
+
+	/** has to works for event listening input amounts and to validate via ajax backend **/
+	const inputHandler = function(e) {
+
+	}
+
+	function post_request(e){
+	$.ajax({
+	type: "POST",
+	url: "{{url_for('requests_conversion_from_coin')}}",
+	contentType: "application/json",
+	data: JSON.stringify(e),
+	dataType: "json",
+	success: function(response) {
+	console.log(response);
+	},
+	error: function(err) {
+	console.log(err);}});
+	}
+	
+	function events_home_tab(){
+	document.getElementById('google-input').addEventListener('propertychange', inputHandler); // for IE8
+	purchase_amount_input = document.getElementById('enter_total_purchase_value_request');
+	//purchase_amount_input.checked = true;
+	purchase_amount_input.addEventListener('input', inputHandler);
+	purchase_amount_input.addEventListener('propertychange', inputHandler); // for IE8
+
+	post_request(`{"amount":${purchase_amount_input.value}}`);
+	}
+
+	/** works for memoizing selected tabs **/
+	$('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+	localStorage.setItem('activeTab', $(e.target).attr('href'));
+	tab = localStorage.getItem('activeTab');
+	if (tab == '#home'){
+	events_home_tab();
+	}
+	if (tab == '#transfer'){
+	transfer_amount_input = document.getElementById('enter_total_transfer_value_request');
+	//transfer_amount_input.checked = true;
+	transfer_amount_input.addEventListener('input', inputHandler);
+	transfer_amount_input.addEventListener('propertychange', inputHandler); // for IE8
+
+	post_request(`{"amount":${transfer_amount_input.value}}`);
+	}
+	if (tab == '#withdraw'){
+	withdrawal_amount_input = document.getElementById('enter_total_withdrawal_value_request');
+	//withdrawal_amount_input.checked = true;
+	withdrawal_amount_input.addEventListener('input', inputHandler);
+	withdrawal_amount_input.addEventListener('propertychange', inputHandler); // for IE8
+	
+	post_request(`{"amount":${withdrawal_amount_input.value}}`);
+	}
+	});
+	var activeTab = localStorage.getItem('activeTab');
+	if(activeTab){
+	$('.nav-tabs a[href="' + activeTab + '"]').tab('show');
+	if (activeTab == '#home'){
+	events_home_tab();
+	}
+	}
+	if (!activeTab) {
+	events_home_tab();
+	}
+
+	/**purchase_amount_input = document.getElementById('purchase-amount-input');**/
+	/**withdrawal_amount_input = document.getElementById('withdrawal-amount-inputt');**/
+	/**purchase_amount_input.checked = true;**/
+	/****/
+	/**withdrawal_amount_input.checked = true;**/
+
+	/**purchase_amount_input.addEventListener('input', inputHandler);
+
+	withdrawal-amount-inputt.addEventListener('input', inputHandler);
+	purchase_amount_input.addEventListener('propertychange', inputHandler); // for IE8
+	withdrawal_amount_input.addEventListener('propertychange', inputHandler); // for IE8**/
+	});
+	</script>
   </body>
 </html>

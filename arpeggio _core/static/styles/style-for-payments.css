@@ -22,7 +22,8 @@ html, body, .container-fluid {
 
 .review-text {
     background: red;
-    color: #fff
+    color: #fff;
+	margin-right: 0.5rem;
 }
 
 .info {
@@ -86,6 +87,13 @@ html, body, .container-fluid {
     z-index: 1000
 }
 
+.checkout-amount-display {
+	margin-left: 0.5rem;
+	padding-left: 30px;
+	padding-bottom: 16px;
+	margin-top: -10px;
+}
+
 .option-input:hover {
     background: #9faab7
 }
@@ -132,7 +140,7 @@ html, body, .container-fluid {
 
 .line-text {
     width: 100%;
-    text-align: center;
+    /**text-align: center;**/
     border-bottom: 1px solid #eee;
     line-height: 0.1em;
     margin: 10px 0 20px
@@ -142,6 +150,10 @@ html, body, .container-fluid {
     background: #fff;
     padding: 0 10px;
     color: #212529
+}
+
+#mayTab {
+	margin-right: 0.5rem;
 }
 
 .user-images img, i {
@@ -171,4 +183,13 @@ i {
 
 .informational {
 	padding-right: 20%;
+}
+
+#upper-margin-for-buy-tab-contents {
+	padding-bottom: 6px;
+}
+
+#displayTotalPayable {
+	height: 38px;
+	font-size: 6.5pt;
 }
