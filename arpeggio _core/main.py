@@ -77,7 +77,7 @@ def set_express_checkout():
              'amount': {
                  'total': request.form['total'],
                  'currency':'USD'},
-             'description':'{"payment to business acc"}'
+             'description':f"purchase->{request.form['coinsReceived']}"
              }],
          'redirect_urls': {
              'return_url': 'https://example.com',
@@ -104,11 +104,20 @@ def do_express_checkout():
 
     # PayerID is required to approve the payment.
     if payment.execute({"payer_id": request.form['payerID']}):
-        session['paymentID'] = {'paymentID':payment.id,
+        amount = payment.transactions[0]['amount']['total']
+        fee = payment.transactions[0]['related_resources'][0]['sale']['transaction_fee']['value']
+        print(amount)
+        print(fee)
+        session['paymentID'] = {'id_token':session['id_token'],
+                                'paymentID':payment.id,
+                                'amount':float(amount)-float(fee),
+                                'coin':float(f"{payment.transactions[0]['description']}".split('->')[1]),
                                 'create_time':payment.create_time}
-        memoize_transaction({'paymentID':payment.id,
+        memoize_transaction({'id_token':session['id_token'],
+                             'paymentID':payment.id,
+                             'amount':float(amount)-float(fee),
+                             'coin':float(f"{payment.transactions[0]['description']}".split('->')[1]),
                              'timestamp':payment.create_time})
-        print(app.config['mem-pool'])
         print("Payment[%s] execute successfully" % (payment.id))
         return jsonify(success=True)
     print(payment.error)
@@ -151,7 +160,7 @@ def withdrawals_complete():
 @app.route('/connect', methods=['POST'])
 @app.route('/connect/', methods=['POST'])
 def connect_google_openid_session():    
-    data = request.get_json()
+    data = request.get_json()['kR']
     session['id_token'] = data
     return jsonify(success=True, data=data)
 
@@ -165,14 +174,40 @@ def requests_conversion_from_coin():
 
 def is_grantable_access_token(config:dict): return True
 
+def write_to_wallets(id_token, data):
+    last_known = mem.load_json(os.path.join(bc.settings['wallets-dir'],f"{id_token}.json"))
+    if not last_known:
+        data['last-seen-amount'] = 0
+        data['last-seen-coin'] = 0
+        mem.write_json(data, os.path.join(bc.settings['wallets-dir'],f"{id_token}.json"))
+        return
+    data['last-seen-amount'] = last_known['last-seen-amount'] + last_known['amount']
+    data['last-seen-coin'] = last_known['last-seen-coin'] + last_known['coin']
+    mem.write_json(data, os.path.join(bc.settings['wallets-dir'],f"{id_token}.json"))
+
 def clear_mem(data:dict):
     t = []
+    amount_tally = 0
+    coin_tally = 0
     for i in data:
+        amount_tally += app.config['mem-pool'][i]['amount']
+        coin_tally += app.config['mem-pool'][i]['coin']
+        id_token = app.config['mem-pool'][i]['id_token']
+        write_to_wallets(id_token, app.config['mem-pool'][i])
         t.append(app.config['mem-pool'][i])
         app.config['mem-pool'].pop(i)
-
     bc.publish(t, configure['access-token'])
-
+    published_supply = mem.load_json(os.path.join(bc.settings['wallets-dir'],"supply.json"))
+    if not published_supply:
+        supply = coin_tally
+        amount = amount_tally
+        d = {'total-supply-published':supply,'total-banked': amount}
+        mem.write_json(d, os.path.join(bc.settings['wallets-dir'],"supply.json"))
+        return
+    published_supply['total-supply-published'] = published_supply['total-supply-published'] + coin_tally
+    published_supply['total-banked'] = published_supply['total-banked'] + amount_tally
+    mem.write_json(published_supply, os.path.join(bc.settings['wallets-dir'],"supply.json"))
+    
 def is_valid_broadcast(config:dict, data:dict):
     if not is_grantable_access_token(config): return False
     clear_mem(data)

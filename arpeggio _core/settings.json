@@ -1,3 +1,5 @@
 {
-	"ledger-dir": "ledger"
+	"ledger-dir": "ledger",
+	"wallets-dir": "wallets",
+	"supply-capacity": 105000
 }

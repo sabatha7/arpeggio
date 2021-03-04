@@ -1,4 +1,6 @@
-
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class StorageAPI:
     def __init__(self, json):
@@ -10,6 +12,7 @@ class StorageAPI:
             json_map = self.json.load(open(path_to_file, 'rt'))
         except IOError:
             logger.error("cannot load json required")
+            return 0
         return json_map
 
     def write_json(self, python_map, fn):
