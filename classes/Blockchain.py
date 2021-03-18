@@ -2,9 +2,12 @@ import json
 from hashlib import sha256
 import os
 
+def sha256_string(info_string:str):
+    return sha256(info_string.encode()).hexdigest()
+
 def compute_hash(info:dict):
     info_string = json.dumps(info, sort_keys=True)
-    return sha256(info_string.encode()).hexdigest()
+    return sha256_string(info_string)
 
 class Blockchain:
 

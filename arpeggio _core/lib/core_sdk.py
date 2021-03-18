@@ -1,41 +1,38 @@
 class Splitting:
 
-    def __init__(self, netx_target:int):
+    def __init__(self, net_target:int):
 
         # set the projection for the base coins
-        self.netx_target = netx_target #i.e $105000
+        self.net_target = net_target #i.e $105000
 
-    def split(self, amount:float, neglect_ratio:float, netx_fee:float):
-        
+    def cumpute_moneys_owed(self, amount_in_tokens_required:float, neglect_ratio:float):
+
         #find the 1:1 share
-        rs = self.calc_real_share(amount)
-        
+        real_share = self.calc_real_share(amount_in_tokens_required)
+
         #determine the last known splitting parameters
-        #1.by how much the previous visited wallet has been neglected
+        #define by how much the previous visited wallet has been neglected
         nr = neglect_ratio #i.e ,99%
 
-        #make the split
-        split = rs - rs * nr
-
-        return split
+        #make the final dollar amount
+        amount = real_share - real_share * nr
+        return amount
 
     # this method assumes a 1:1 scale for amount and share
-    def calc_real_share(self, amount:float):
+    # inputs a dollar amount
+    def calc_real_share(self, amount_in_tokens:float):
         
-        real_share = self.netx_target(amount/self.netx_target)
+        real_share = self.net_target * amount_in_tokens
         return real_share
     
     # sum of these value found using the last_block_added attribute @bc
-    # calls this method at publishing blocks as well
-    def calc_neglect_ration(self, amount_paid:float, share_received:float):
+    def calc_neglect_ratio(self, tokens_received:float, amount_paid:float):
         
         # determine the 1:1 share
-        rs = self.calc_real_share(amount_paid)
-        
-        # determine the neglect ration
-        nr = 1-share_received/rs
-        
-        return nr
+        rs = amount_paid/self._net_target
+
+        #return a percentile of 100
+        return 1-tokens_received/rs
 
     def sum_neglect_ratios(self, total_mint:int
                            , new_mint

@@ -4,8 +4,8 @@
 <!-- Required meta tags -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="google-signin-client_id" content="102498965997-1id4r28grqs9dm5agkovm8umc0k7eekd.apps.googleusercontent.com">
-<title>CoCCoin</title>
+<meta name="google-signin-client_id" content="955558319027-t7vcq5324c29dfl04n2hk31t52jbir9j.apps.googleusercontent.com">
+<title>sircoin</title>
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
 <!-- Google Fonts -->
@@ -14,21 +14,23 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
 <!-- Material Design Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
+<!-- Custom Css -->
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style-for-home-page.css') }}">
 
 <script>
 function onSuccess(googleUser) {
 console.log(googleUser.getBasicProfile());
-document.getElementById('profile-name').innerHTML = googleUser.getBasicProfile().getId();
 document.getElementById('profile-tag').innerHTML = 'member';
 
 $.ajax({
 type: "POST",
-url: "{{url_for('connect_google_openid_session')}}",
+url: "{{url_for('broadcasts_google_openid_authorisation')}}",
 contentType: "application/json",
 data: JSON.stringify(googleUser.getBasicProfile()),
 dataType: "json",
 success: function(response) {
 console.log(response);
+document.getElementById('profile-name').innerHTML = response.data;
 },
 error: function(err) {
 console.log(err);}});
@@ -56,7 +58,7 @@ gapi.signin2.render('my-signin2', {
 <div class='row z-depth-3'>
 	<div class='col-sm-4 bg-info rounded-left'>
 		<div class='card-block text-center text-white'>
-		<i class="fas fa-ghost fa-7x mt-5"></i>
+		<i class="fas fa-user-tie fa-7x mt-5"></i>
 		<!--<i class='fas fa-user-tie fa-tie fa-7x mt-5'></i>-->
 		<h2 id='profile-name' class='font-weight-bold mt-4' style='word-wrap: break-word;'>Satoshi</h2>
 		<p id='profile-tag'>member</p>
@@ -73,19 +75,19 @@ gapi.signin2.render('my-signin2', {
 			<h6 class='text-muted'>0.0<a href='{{url_for("payments")}}'><i class="fas fa-exchange-alt"></i></a></h6>
 			</div>
 			<div class='col-sm-4'>
-			<p class='font-weight-bold'>COCCOIN</p>
-			<h6 class='text-muted'>~0.0</h6>
+			<p class='font-weight-bold'>mint</p>
+			<h6 class='text-muted'>~3.0</h6>
 			</div>
 			<div class='col-sm-4'>
-			<p class='font-weight-bold'>Network Target(~.0%)</p>
+			<p class='font-weight-bold'>Network Target(~0.0002857142%)</p>
 			<h6 class='text-muted'>Fool's Gold</h6>
 			</div>
 		</div>
 		<hr class='bg-primary'>
 		<ul class='list-unstyled d-flex justify-content-center mt-4'>
-			<li><a href='https://fb.me/sabathabapela.business'><i class='fab fa-facebook-f px-3 h4 text-info'></i></a></li>
-			<li><a href='https://www.youtube.com/channel/UCYZunCZ8wyH6MjZOA-y_9Og/discussion'><i class='fab fa-youtube px-3 h4 text-info'></i></a></li>
-			<li><a href='#'><i class='fab fa-twitter px-3 h4 text-info'></i></a></li>
+			<li><a href='https://fb.me/sabathabapela.business' target="_blank"><i class='fab fa-facebook-f px-3 h4 text-info'></i></a></li>
+			<li><a href='https://www.youtube.com/channel/UCYZunCZ8wyH6MjZOA-y_9Og/discussion' target="_blank"><i class='fab fa-youtube px-3 h4 text-info'></i></a></li>
+			<li><a href='#' target="_blank"><i class='fab fa-twitter px-3 h4 text-info'></i></a></li>
 		</ul>
 	</div>
 </div>

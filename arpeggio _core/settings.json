@@ -1,5 +1,11 @@
 {
 	"ledger-dir": "ledger",
 	"wallets-dir": "wallets",
-	"supply-capacity": 105000
+	"supply-capacity": 1050000,
+	"http-dns-port": "80",
+	"https-dns-port": "443",
+	"paypal-fees": {"conversion-rate": 0.04,
+					"fixed-amount": 0.3,
+					"all-payments-rate": 0.05
+	}
 }

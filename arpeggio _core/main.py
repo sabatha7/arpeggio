@@ -25,107 +25,28 @@ configure = {'access-token':os.environ.get('ACCESS_TOKEN')}
 mem = Memory.StorageAPI(json)
 bc = Blockchain.Blockchain(mem, Block)
 bc.settings = mem.load_json(os.path.join("settings.json"))
+cs = core_sdk.Splitting(1050000)
 
-#// 1. Set up your server to make calls to PayPal
-
-#// 1a. Add your client ID and secret
 
 PAYPAL_LIVE = {
     "mode": "live", # sandbox or live
-    "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
-    "client_secret": os.environ.get('PAYPAL_SECRET')}
+    "client_id": os.environ.get('PAYPAL_CLIENT_ID_LIVE'),
+    "client_secret": os.environ.get('PAYPAL_SECRET_LIVE')}
 PAYPAL_SANDBOX = {
     "mode": "sandbox", # sandbox or live
     "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
     "client_secret": os.environ.get('PAYPAL_SECRET')}
 
-paypalrestsdk.configure(PAYPAL_SANDBOX)
+paypalrestsdk.configure(PAYPAL_LIVE)
+
+# -- TEMPLATES/VIEWS
     
 @app.route("/", methods=["POST", "GET"])
-def home():
-    return render_template('index.html')
+def home():return render_template('index.html')
 
 @app.route("/payments")
 @app.route("/payments/")
-def payments():
-    return render_template('payments.html')
-
-@app.route('/set-express-checkout', methods=['POST', 'GET'])
-@app.route('/set-express-checkout/', methods=['POST', 'GET'])
-def set_express_checkout():
-    if not 'total' in request.form: return jsonify(success=False, status=401)
-    if not 'id_token' in session: return jsonify(success=False, status=401)
-    # Name needs to be unique so just generating a random one
-    wpn = ''.join(random.choice(string.ascii_uppercase) for i in range(12))
-
-    web_profile = paypalrestsdk.WebProfile({
-        "name": wpn,
-        "input_fields": {
-            "allow_note": False,
-            "no_shipping": 1,
-            },
-        })
-    if web_profile.create():print("Web Profile[%s] created successfully" % (web_profile.id))
-    else:print(web_profile.error)
-    
-    d = {'intent':'sale',
-         'experience_profile_id': web_profile.id,
-         'payer': {
-             'payment_method':'paypal'
-             },
-         'transactions': [{
-             'amount': {
-                 'total': request.form['total'],
-                 'currency':'USD'},
-             'description':f"purchase->{request.form['coinsReceived']}"
-             }],
-         'redirect_urls': {
-             'return_url': 'https://example.com',
-             'cancel_url': 'https://example.com'}
-         }
-    payment = paypalrestsdk.Payment(d)
-
-    if payment.create():
-        print("Payment[%s] created successfully" % (payment.id))
-        return jsonify(paymentID=payment.id, status=200)
-    else:
-        print(payment.error)
-        return jsonify(success=False,status=404)
-
-def memoize_transaction(transaction_object):
-    app.config['mem-pool'][transaction_object[
-        'paymentID']] = transaction_object;
-
-@app.route('/express-checkout-return-url', methods=['POST', 'GET'])
-@app.route('/express-checkout-return-url/', methods=['POST', 'GET'])
-def do_express_checkout():
-    # ID of the payment. This ID is provided when creating payment.
-    payment = paypalrestsdk.Payment.find(request.form['paymentID'])
-
-    # PayerID is required to approve the payment.
-    if payment.execute({"payer_id": request.form['payerID']}):
-        amount = payment.transactions[0]['amount']['total']
-        fee = payment.transactions[0]['related_resources'][0]['sale']['transaction_fee']['value']
-        print(amount)
-        print(fee)
-        session['paymentID'] = {'id_token':session['id_token'],
-                                'paymentID':payment.id,
-                                'amount':float(amount)-float(fee),
-                                'coin':float(f"{payment.transactions[0]['description']}".split('->')[1]),
-                                'create_time':payment.create_time}
-        memoize_transaction({'id_token':session['id_token'],
-                             'paymentID':payment.id,
-                             'amount':float(amount)-float(fee),
-                             'coin':float(f"{payment.transactions[0]['description']}".split('->')[1]),
-                             'timestamp':payment.create_time})
-        print("Payment[%s] execute successfully" % (payment.id))
-        return jsonify(success=True)
-    print(payment.error)
-    return jsonify(success=False)
-
-@app.route('/error-checks', methods=['POST', 'GET'])
-@app.route('/error-checks/', methods=['POST', 'GET'])
-def do_error_check():return jsonify(success=True)
+def payments():return render_template('payments.html')
 
 @app.route("/payments-complete")
 @app.route("/payments-complete/")
@@ -134,6 +55,127 @@ def payments_complete():
     return render_template('payments-complete.html',
                            date=session['paymentID']['create_time'],
                            paymentID=session['paymentID']['paymentID'])
+
+# -- END
+
+# -- SERVER-SIDE METHODS FOR TEMPLATES/VIEWS
+
+def compile_information(tokens:int):
+    first_option = [app.config['mem-pool'][i]['coin'] for i in app.config['mem-pool'].keys()]
+    if len(first_option):pass
+    second_option = bc.last_block_added
+    if second_option:pass
+    return tokens * 100 * 1.00
+
+@app.route('/requests-cryto-to-fiat-rates', methods=['POST'])
+@app.route('/requests-cryto-to-fiat-rates/', methods=['POST'])
+def crypto_to_fiat():
+    data = request.get_json()
+    value = json.loads(data)['amount']
+    info = compile_information(value)
+    return jsonify(success=True,total=info)
+
+# -- END
+
+# -- GOOGLE
+
+@app.route('/google-authorised', methods=['POST'])
+@app.route('/google-authorised/', methods=['POST'])
+def broadcasts_google_openid_authorisation():    
+    id_token = request.get_json()['kR']
+    session['id_token'] = id_token
+    return jsonify(success=True, data=Blockchain.sha256_string(f"{id_token}"))
+
+# -- END
+
+# -- PAYPAL
+
+def paypal_web_profile_json_request_object():
+    wpn = ''.join(random.choice(string.ascii_uppercase) for i in range(12))
+    web_profile = paypalrestsdk.WebProfile({
+        "name": wpn,
+        "input_fields": {
+            "allow_note": False,
+            "no_shipping": 1,
+            },
+        })
+    return web_profile
+
+def paypal_create_web_profile():
+    try:
+        web_profile = paypal_web_profile_json_request_object()
+        if web_profile.create():
+            print("Web Profile[%s] created successfully" % (web_profile.id))
+            return web_profile
+    except IOError:print(web_profile.error)
+    return None
+
+def paypal_payment_json_object(request_object):
+    print(request_object.form['total'].split("$")[1])
+    web_profile = paypal_create_web_profile()
+    d = {'intent':'sale',
+         'experience_profile_id': web_profile.id,
+         'payer': {
+             'payment_method':'paypal'
+             },
+         'transactions': [{
+             'amount': {
+                 'total': request_object.form['total'].split("$")[1],
+                 'currency':'USD'},
+             'description':f"purchase->{request.form['coinsReceived']}"
+             }],
+         'redirect_urls': {
+             'return_url': 'https://example.com',
+             'cancel_url': 'https://example.com'}
+         }
+    return d
+
+@app.route('/set-express-checkout', methods=['POST', 'GET'])
+@app.route('/set-express-checkout/', methods=['POST', 'GET'])
+def paypal_set_express_checkout():
+    if not 'total' in request.form: return jsonify(success=False, status=401)
+    if not 'id_token' in session: return jsonify(success=False, status=401)
+
+    try:
+        data = paypal_payment_json_object(request)
+        payment = paypalrestsdk.Payment(data)
+        if payment.create():
+            print("Payment[%s] created successfully" % (payment.id))
+            return jsonify(paymentID=payment.id, status=200)
+    except IOError:print(payment.error)
+    return jsonify(success=False,status=404)
+
+def memoize_transaction(transaction_object):
+    app.config['mem-pool'][transaction_object[
+        'paymentID']] = transaction_object;
+
+def return_transaction_object(payment):
+    return {'id_token':session['id_token'],
+            'paymentID':payment.id,
+            'amount':amount,
+            'fee':fee,
+            'coin':fee,
+            'create_time':payment.create_time}
+
+@app.route('/do-express-checkout', methods=['POST', 'GET'])
+@app.route('/do-express-checkout/', methods=['POST', 'GET'])
+def paypal_do_express_checkout():
+    try:
+        payment = paypalrestsdk.Payment.find(request.form['paymentID'])
+        if payment.execute({"payer_id": request.form['payerID']}):
+            amount = float(payment.transactions[0]['amount']['total'])
+            fee = float(payment.transactions[0]['related_resources'][0]['sale']['transaction_fee']['value'])
+            coin = float(f"{payment.transactions[0]['description']}".split('->')[1])
+            session['paymentID'] = return_transaction_object(payment)
+            memoize_transaction(return_transaction_object(payment))
+            print("Payment[%s] execute successfully" % (payment.id))
+            return jsonify(success=True)
+    except IOError:print(payment.error)
+    return jsonify(success=False)
+
+# -- END
+
+# -- BANKING
 
 @app.route("/transfers")
 @app.route("/transfers/")
@@ -155,22 +197,11 @@ def withdrawals_complete():
     #if not 'paymentID' in session: return "unauthorized", 401
     return render_template('withdrawals-complete.html')
 
-#TODO:: disable disputes, disclaimers & terms
+@app.route("/handle-disputes")
+@app.route("/handle-disputes/")
+def disputes_webhook():pass
 
-@app.route('/connect', methods=['POST'])
-@app.route('/connect/', methods=['POST'])
-def connect_google_openid_session():    
-    data = request.get_json()['kR']
-    session['id_token'] = data
-    return jsonify(success=True, data=data)
-
-@app.route('/requests_conversion_from_coin', methods=['POST'])
-@app.route('/requests_conversion_from_coin/', methods=['POST'])
-def requests_conversion_from_coin():
-    data = request.get_json()
-    value = json.loads(data)['amount']
-    print(value)
-    return jsonify(success=True)
+# -- END
 
 def is_grantable_access_token(config:dict): return True
 
@@ -228,4 +259,7 @@ def latest_pipeline_broadcast():
     return jsonify(success=True, code=200) if is_valid_broadcast(d['access-token'], d[k]) else jsonify(success=False, code=401)
 
 def administration_pipelines():pass
-if __name__ == "__main__": app.run(debug=True,host='localhost')
+if __name__ == "__main__":
+    #443 for https 80 for http
+    context = ('sircoin.org_ssl_certificate.cer', '_.sircoin.org_private_key.key')#certificate and key files
+    app.run(debug=True,host='192.168.0.118', port=443, ssl_context=context)

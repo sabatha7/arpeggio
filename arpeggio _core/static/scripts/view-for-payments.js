@@ -1,6 +1,6 @@
 $(document).ready(function() {
 /** works for activating the maintenace break modal **/
-$("#exampleModal").modal('show');
+/**$("#exampleModal").modal('show'); **/
 
 /** works for checking and unchecking some progress pointers **/
 $('input[type=checkbox]').change(function() {
