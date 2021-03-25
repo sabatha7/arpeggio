@@ -6,6 +6,6 @@
 	"https-dns-port": "443",
 	"paypal-fees": {"conversion-rate": 0.04,
 					"fixed-amount": 0.3,
-					"all-payments-rate": 0.05
-	}
+					"all-payments-rate": 0.05},
+	"network-fee": 1
 }

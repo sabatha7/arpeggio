@@ -72,15 +72,15 @@ gapi.signin2.render('my-signin2', {
 		<div class='row'>
 			<div class='col-sm-4'>
 			<p class='font-weight-bold'>Balance</p>
-			<h6 class='text-muted'>0.0<a href='{{url_for("payments")}}'><i class="fas fa-exchange-alt"></i></a></h6>
+			<h6 class='text-muted'>{{balance}}<a href='{{url_for("payments")}}'><i class="fas fa-exchange-alt"></i></a></h6>
 			</div>
 			<div class='col-sm-4'>
 			<p class='font-weight-bold'>mint</p>
-			<h6 class='text-muted'>~3.0</h6>
+			<h6 class='text-muted'>{{mint}}</h6>
 			</div>
 			<div class='col-sm-4'>
-			<p class='font-weight-bold'>Network Target(~0.0002857142%)</p>
-			<h6 class='text-muted'>Fool's Gold</h6>
+			<p style='word-wrap: break-word;' class='font-weight-bold'>Network Target(~{{net_target}}%)</p>
+			<h6 style='word-wrap: break-word;' class='text-muted'>Thoroughfare</h6>
 			</div>
 		</div>
 		<hr class='bg-primary'>

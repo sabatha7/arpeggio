@@ -317,12 +317,15 @@
 	
 	post_request(`{"amount":${purchase_amount_input.value}}`, "displayTotalPayable");
 	}
-
+	
+	var globalTabRequestsCounter = 0;
 	/** works for memoizing selected tabs **/
 	$('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
 	localStorage.setItem('activeTab', $(e.target).attr('href'));
-	tab = localStorage.getItem('activeTab');
+	globalTabRequestsCounter += 1;
 	setTimeout(function(){
+	if(globalTabRequestsCounter<=0) return;
+	tab = localStorage.getItem('activeTab');
 	if (tab == '#home'){
 	events_home_tab();
 	}
@@ -342,6 +345,7 @@
 	
 	post_request(`{"amount":${withdrawal_amount_input.value}}`, "displayTotalWithdrawable");
 	}
+	globalTabRequestsCounter = 0;
 	}, 12000);
 	});
 	

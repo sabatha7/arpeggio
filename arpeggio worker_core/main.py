@@ -16,8 +16,8 @@ configure = {'access-token':os.environ.get('ACCESS_TOKEN')}
 settings_file = os.path.join("settings.json")
 mem = Memory.StorageAPI(json)
 
-feed_endpoint = 'http://localhost:5000/latest-pipeline-feed/'
-broadcast_endpoint = 'http://localhost:5000/latest-pipeline-broadcast/'
+feed_endpoint = 'https://sircoin.org/latest-pipeline-feed/'
+broadcast_endpoint = 'https://sircoin.org/latest-pipeline-broadcast/'
 
 bc = Blockchain.Blockchain(mem, Block)
 bc.settings = mem.load_json(settings_file)
@@ -29,8 +29,9 @@ class Worker:
             feed = {}
 
             try:feed = self.feed(feed_endpoint)
-            except IOError:
+            except IOError as e:
                 print('waiting for host...')
+                print(e)
                 continue
 
             if len(feed.keys()):
