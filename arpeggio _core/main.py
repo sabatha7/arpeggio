@@ -120,7 +120,7 @@ def broadcasts_google_openid_authorisation():
         data['last-seen-fee'] = 0
         mem.write_json(data, os.path.join(
             bc.settings['wallets-dir'],f"{h}.json"))
-    return jsonify(success=True, data=h)
+    finally:return jsonify(success=True, data=h)
 
 # -- END
 
@@ -208,7 +208,7 @@ def paypal_do_express_checkout():
             print("Payment[%s] execute successfully" % (payment.id))
             return jsonify(success=True)
     except IOError:print(payment.error)
-    return jsonify(success=False)
+    finally:return jsonify(success=False)
 
 # -- END
 
